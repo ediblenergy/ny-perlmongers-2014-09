@@ -1,0 +1,15 @@
+DevOps: Application Deployment In The Cloud
+Security ( least privilege, least deps possible )
+Uniformity
+Standardization
+
+{/opt,/var/lib,/var/run,/var/log}/socialflow/$env/$application
+init.d
+/opt - Software
+/var/log - Logs
+/var/lib - data ( dbs, etc )
+/var/run - temporary state data ( pid files, etc )
+Idempotency
+
+Self Documenting / Data-Driven ( YAML Configs for easy introspection )
+Task Automation ( vs say, puppet's server client architecture running as sudo. )
