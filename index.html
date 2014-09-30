@@ -69,36 +69,49 @@
     </aside>
 </section>
 
+<section>
+    <h2>What is Devops?</h2>
+    <div class="fragment"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Devops.svg">
+        <p><a href="https://en.wikipedia.org/wiki/DevOps">en.wikipedia.org/wiki/DevOps</a>
+        <p>The intersection of Dev, Ops, and QA.
+    </div>
+</section>
 
 <section>
     <section>
-    <h2>In the Beginning...</h2>
-    <h3>Chaos Ruled</h3>
+        <h3>Brief history of applications deployment at SocialFlow</h3>
     </section>
     <section>
-        <h3>Antipatterns</h3>
+        <h2>In the Beginning...</h2>
+        <h3>Chaos Ruled</h3>
+    </section>
+    <section>
 <pre><code>ssh rando-box-43.ec2.external
 cd ~/herp/derp/REALVersion.new
 python mydaemon.py -e newprod -d</code></pre>
         <pre><code>$ redis-server redis.conf</code></pre>
         <pre><code>$ redis-server -</code></pre>
-        </section>
-
-        <section>
-            <h3>Daemonizing Mechanisms</h3>
-            <p>runit
-            <p>/etc/init.d/
-            <p>myscript.pl --daemonize
-        </section>
-
-        <section>
+    </section>
+    <section>
+        <h3>Daemonizing Mechanisms</h3>
+        <p>runit
+        <p>/etc/init.d/
+        <p>myscript.pl --daemonize
+    </section>
+    <section>
+         <h3>Standards</h3>
+        <p>Logs: /dev/null, stderr, /tmp/, $PWD...
+        <p>Code: /opt, /home/, /ebs ( not in fstab ) , /ebs2
+        <p>State files: anywhere
+        <p>Config: manual edits on production, config commited to code repo
+    </section>
+    <section>
         <h3>Deploy Process</h3>
         <ul>
         <li>ssh to machine, clone the repos, install the deps, start the proc
         <li>Bash &amp; Python scripts
         </ul>
-        </section>
-
+    </section>
 </section>
 
 <section>
@@ -118,15 +131,14 @@ python mydaemon.py -e newprod -d</code></pre>
 <p class="fragment">No Monitoring ( ssh to the box and ps auxf )
 <p class="fragment">Extremely unstable
 </section>
-
 <section>
-<h3>Enlightenment</h3>
-<p>What if we were to deploy things where we could find them later?
+    <h3>Enlightenment</h3>
+    <p>What if we were to deploy things where we could find them later?
 </section>
 <!-- Example of nested vertical slides -->
 <section>
 <section>
-<h2>Python Deployer ( Using Fabric )</h2>
+<h3>Python Deployer ( Using Fabric )</h3>
 <pre><code>
 attention/
 helloworld/
@@ -139,8 +151,8 @@ tally_main/
 timeline/
 tribal/
 twitterfirehose/
-fabfile.py
-supervisor.template
+    fabfile.py
+    supervisor.template
 </code></pre>
 </section>
 <section>
@@ -197,59 +209,65 @@ checkout()
 </section>
 </section>
     <section>
-    <h2>Deploy Process</h2>
-    <li class="fragment">SSH to deploy server
-    <li class="fragment">Error/Sanity check some things ( which supervisord... )
-    <li class="fragment">Create a subdir in /opt/socialflow/:env/:application
-    <li class="fragment">Git clone each repo
-    <li class="fragment">cd into each dir
-    <li class="fragment">install python,perl deps into a contained dir
-    <li class="fragment">Render the supervisor template file
-    <li class="fragment">Assert the supervisor daemon is running
-    <li class="fragment">Call 'update' on the supervisord
+        <section>
+            <h3>Deploy Process</h3>
+            <li class="fragment">SSH to deploy server
+            <li class="fragment">Error/Sanity check some things ( which supervisord... )
+            <li class="fragment">Create a subdir in /opt/socialflow/:env/:application
+            <li class="fragment">Git clone each repo
+            <li class="fragment">cd into each dir
+            <li class="fragment">install python,perl deps into a contained dir
+            <li class="fragment">Render the supervisor template file
+            <li class="fragment">Assert the supervisor daemon is running
+            <li class="fragment">Call 'update' on the supervisord
+        </section>
+    <section>
+        <h3>Daemonizing Mechanisms</h3>
+        <p>supervisord
     </section>
     <section>
-    <h4>Examples</h4>
+         <h3>Standards</h3>
+        <p>Logs: /dev/null, stderr, /tmp/, $PWD, /opt
+        <p>Code: /opt
+        <p>State files: /opt or /tmp
+        <p>Config: config commited to code repo
+    </section>
+    <section>
+        <h3>Deploy Process</h3>
 <pre><code>$ fab prod deploy
 $ fab prod 'supervisorctl:restart all'</code></pre>
+        <p class="fragment">...in theory
     </section>
-
     <section>
-    <h3>Advantages</h3>
-    <li class="fragment">Daemons will be restarted if they exit
-    <li class="fragment">Neat cli
-    <li class="fragment">Automated
-    <li class="fragment">Somewhat documented ( There were still special cases )
+        <h3>Advantages</h3>
+        <li class="fragment">Daemons will be restarted if they exit
+        <li class="fragment">Neat cli
+        <li class="fragment">Automated
+        <li class="fragment">Somewhat documented ( There were still special cases )
     </section>
-
     <section>
-    <h2>Disadvantages</h2>
-    <p class="fragment">Documentation: Some
-    <p class="fragment">Rollbacks: Hard
-    <p class="fragment">Monitoring: check_mk + nagios -&gt; very manual
-    <p class="fragment">Stability: Meh
+    <h3>Disadvantages</h3>
+    <p class="fragment">Lots of exceptions that wouldn't fit into the model
+    <p class="fragment">Rollbacks were hard or impossible
+    <p class="fragment">In place deploys are risky
+    <p class="fragment">No allowance for config, logs, state, data
+    <p class="fragment">Fabric bugs, deploy would crash often
+    </section>
+</section>
+<section>
+    <section>
+        <h3>Why Replace It?</h3>
+        <p>Python has plenty of decent OS manipulating functions</p>
+        <p>( tmp files, path checking, process spawning, etc )</p>
     </section>
 <section>
-    <h2>Drawbacks</h2>
-    <div class="fragment"><p>Fabric is an API over SSH ( pretty much. )
-    You can't use all the OS manipulating functions Python has to offer.
-    <p>You basically end up writing python wrapped Shell scripts</p>
+    <p>Fabric is an API of commands over SSH, you cannot leverage all the OS core or open source utils in Python.
+    <p>At some point gnashing our teeth over implementing all the things we wanted in a deploy system, it just seemed easier to do it in perl.
     <div class="fragment">
-        <p>No standards, logs were going to /tmp or /opt or whereever they were hardcoded to.
-</div>
-</section>
-<section>
-<section>
-    <h2>Why Replace It?</h2>
-    <p>Python has plenty of decent OS manipulating functions</p>
-    <p>( tmp files, path checking, process spawning, etc )</p>
-</section>
-<section>
-<h2>Stupidity</h2>
-<p>Discarding working software and starting from scratch is usually a bad idea.</p>
-<p class="fragment">Massive underestimate of work involved
-<p class="fragment">We probably should've just improved it.
-<p class="fragment">:)
+        <img src="/img/xkcd_perl.png">
+        <div><small><a href="https://xkcd.com/208/">xkcd.com/208/</a></small></div>
+    </div>
+
 </section>
 </section>
 <section>
