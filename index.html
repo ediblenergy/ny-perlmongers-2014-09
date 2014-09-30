@@ -79,24 +79,76 @@
                     <p>Web services deployed from users home directories out of screen ( later tmux ).
                     <p>Usually with uncommitted files.
                     </section>
-                    <section>
-                    <h2>Drawbacks</h2>
-                    <p class="fragment">Documentation: None
-                    <p class="fragment">Rollbacks: Impossible
-                    <p class="fragment">Monitoring: Client complaints
-                    <p class="fragment">Architectural Stability of a shanty town
-                    </section>
+                </section>
+                <section>
+                <h2>Summary</h2>
+                <p class="fragment">Documentation: None
+                <p class="fragment">Rollbacks: Impossible
+                <p class="fragment">Monitoring: Client complaints
+                <p class="fragment">Stability: Extremely low
                 </section>
 
-                <!-- Example of nested vertical slides -->
-                <section>
                 <section>
                 <h3>Enlightenment</h3>
                 <p>What if we were to deploy things where we could find them later?
                 </section>
+                <!-- Example of nested vertical slides -->
+                <section>
                 <section>
                 <h2>Python Deployer ( Using Fabric )</h2>
-                    <pre>
+<pre><code>
+attention/
+helloworld/
+helloworld_cluster/
+pgpool/
+resolver/
+shortener/
+sitestream/
+tally_main/
+timeline/
+tribal/
+twitterfirehose/
+    fabfile.py
+    supervisor.template
+</code></pre>
+                </section>
+                <section>
+                <h4>fabfile.py</h4>
+<pre><code class="python">
+env.repos= ['spy']
+
+env.name = 'twitterfirehose'
+
+env.roledefs = {
+    'local' : ['localhost'],
+    'dev'  : ['ff-firehose-pubsub'],
+    'prod' : ['ff-firehose-pubsub'],
+}
+</code></pre>
+                </section>
+                <section>
+                <h4>supervisor.template</h4>
+<pre><code>
+%(defaults)s
+
+; firehose connection
+[program:firehose]
+command=%(python)s %(path)s/spy/social/twitter/firehose.py -e %(env)s
+autorestart=true
+
+; firehose publisher
+[program:publisher]
+command=%(python)s %(path)s/spy/utils/stream_publisher.py twitterfirehose -e %(env)s
+autorestart=true
+
+; firehose uploader
+[program:uploader]
+command=%(python)s %(path)s/spy/utils/s3_stream_uploader.py twitterfirehose -e %(env)s
+autorestart=true
+</pre></code>
+                </section>
+<section>
+<pre>
 <code class="python">@task
 def supervisorctl(cmd):
     run('supervisorctl -c %s %s' % (env.supervisor_conf_path, cmd))
@@ -111,52 +163,42 @@ def supervisor_start():
 def deploy(update_main=True, update_all=False):
     checkout()
                     </code></pre>
-				</section>
-                <section>
-<pre><code class="python">
-from fabric.api import env
+</section>
+</section>
+                    <section>
+                    <h2>Process</h2>
+                    <p class="fragment">SSH to deploy server
+                    <p class="fragment">Error/Sanity check some things ( which supervisord... )
+                    <p class="fragment">Create a subdir in /opt/socialflow/:env/:application
+                    <p class="fragment">Git clone each repo
+                    <p class="fragment">cd into each dir
+                    <p class="fragment">install python,perl deps into a contained dir
+                    <p class="fragment">Render the supervisor template file
+                    <p class="fragment">Assert the supervisor daemon is running
+                    <p class="fragment">Call 'update' on the supervisord
+                    </section>
+                    <section>
+                    <h4>Examples</h4>
+<pre><code>$ fab prod deploy
+$ fab prod 'supervisorctl:restart all'</code></pre>
+                    </section>
 
-from spy.deployment.utils import *
-from spy.deployment.tasks import *
 
-import spy.deployment.defaults
-
-env.repos= ['spy', 'attention', 'sessionsvc', 'tally' ]
-
-env.name = 'ads'
-
-env.roledefs = {
-    'local' : ['localhost'],
-    'dev'   : ['facebook-dev-1'],
-    'prod'  : ['facebook-1'],
-}
-
-env.local_env_to_branch = {
-    'tally' : {
-        DEV: 'master',
-        PROD: 'master',
-    },
-    'attention' : {
-        DEV: 'dev',
-        PROD: 'master',
-    },
-    'spy' : {
-        DEV: 'master',
-        PROD: 'master',
-    },
-    'sessionsvc' : {
-        DEV: 'master',
-        PROD: 'master',
-    }
-</code></pre>
-                </section>
+                    <section>
+                    <h2>Summary</h2>
+                    <p class="fragment">Documentation: Some
+                    <p class="fragment">Rollbacks: Hard
+                    <p class="fragment">Monitoring: check_mk + nagios -&gt; very manual
+                    <p class="fragment">Stability: Meh
+                    </section>
                 <section>
                     <h2>Drawbacks</h2>
                     <div class="fragment"><p>Fabric is an API over SSH ( pretty much. )
                     You can't use all the OS manipulating functions Python has to offer.
                     <p>You basically end up writing python wrapped Shell scripts</p>
+                    <div class="fragment">
+                        <p>No standards, logs were going to /tmp or /opt or whereever they were hardcoded to.
                 </div>
-				</section>
 				</section>
                 <section>
                 <section>
