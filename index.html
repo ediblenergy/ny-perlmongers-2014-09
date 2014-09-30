@@ -41,61 +41,92 @@
 		<div class="reveal">
 
 			<!-- Any section element inside of this container is displayed as a slide -->
-			<div class="slides">
-				<section>
-                <h1>DevOps in the Cloud With Perl</h1>
-                <h4>( @SocialFlow )</h4>
-					<h3>Strategies and Technologies</h3>
-					<p>
-						<small>Created by <a href="http://pigdogdragon.com/user/3/links" target="_blank">Samuel Kaufman</a> / <a href="http://twitter.com/edibleenergy" target="_blank">@edibleenergy</a></small>
-					</p>
-				</section>
+            <div class="slides">
 
-				<section>
-					<h2>What is SocialFlow</h2>
-                    <p> SocialFlow is a Social Media Platform.
-                    We enable clients to manage their social media presence by algorithmically selecting what content is most likely to engage their audience on social networks.
-                        <ul>
-                            <li>Twitter</li>
-                            <li>Facebook</li>
-                            <li>Google+</li>
-                            <li>LinkedIn</li>
-                        </ul>
-					</p>
+<section>
+    <h1>DevOps in the Cloud With Perl</h1>
+    <h4>( @SocialFlow )</h4>
+    <h3>Strategies and Technologies</h3>
+    <p>
+        <small>Created by <a href="http://pigdogdragon.com/user/3/links" target="_blank">Samuel Kaufman</a> / <a href="http://twitter.com/edibleenergy" target="_blank">@edibleEnergy</a></small>
+    </p>
+</section>
 
-					<aside class="notes">
-						Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
-					</aside>
-				</section>
+<section>
+    <h2>What is SocialFlow</h2>
+    <p> SocialFlow is a Social Media Platform.
+    We enable clients to manage their social media presence by algorithmically selecting what content is most likely to engage their audience on social networks.
+        <ul>
+            <li>Twitter</li>
+            <li>Facebook</li>
+            <li>Google+</li>
+            <li>LinkedIn</li>
+        </ul>
+    </p>
+
+    <aside class="notes">
+        Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
+    </aside>
+</section>
 
 
-                <section>
-                    <section>
-                    <h2>In the Beginning...</h2>
-                    <h3>Chaos Ruled</h3>
-                    </section>
-                    <section>
-                        <pre><code>loneranger@rando-box-43:~/herp/derp/REALVersion.new $ python mydaemon.py -e prod -d</code></pre>
-                    <p>Web services deployed from users home directories out of screen ( later tmux ).
-                    <p>Usually with uncommitted files.
-                    </section>
-                </section>
-                <section>
-                <h2>Summary</h2>
-                <p class="fragment">Documentation: None
-                <p class="fragment">Rollbacks: Impossible
-                <p class="fragment">Monitoring: Client complaints
-                <p class="fragment">Stability: Extremely low
-                </section>
+<section>
+    <section>
+    <h2>In the Beginning...</h2>
+    <h3>Chaos Ruled</h3>
+    </section>
+    <section>
+        <h3>Antipatterns</h3>
+<pre><code>ssh rando-box-43.ec2.external
+cd ~/herp/derp/REALVersion.new
+python mydaemon.py -e newprod -d</code></pre>
+        <pre><code>$ redis-server redis.conf</code></pre>
+        <pre><code>$ redis-server -</code></pre>
+        </section>
 
-                <section>
-                <h3>Enlightenment</h3>
-                <p>What if we were to deploy things where we could find them later?
-                </section>
-                <!-- Example of nested vertical slides -->
-                <section>
-                <section>
-                <h2>Python Deployer ( Using Fabric )</h2>
+        <section>
+            <h3>Daemonizing Mechanisms</h3>
+            <p>runit
+            <p>/etc/init.d/
+            <p>myscript.pl --daemonize
+        </section>
+
+        <section>
+        <h3>Deploy Process</h3>
+        <ul>
+        <li>ssh to machine, clone the repos, install the deps, start the proc
+        <li>Bash &amp; Python scripts
+        </ul>
+        </section>
+
+</section>
+
+<section>
+    <h3>Advantages</h3>
+    <p>
+    <p class="fragment">Fast dev cycles ( ship the prototype )
+    <p class="fragment">Instant deploys
+    <p class="fragment">Fun, not boring
+    <p class="fragment">Bugfixes always go straight to prod
+</section>
+
+
+<section>
+<h3>Disadvantages</h3>
+<p class="fragment">No Documentation ( every daemon requires specialized knowledge )
+<p class="fragment">Rollbacks are impossible
+<p class="fragment">No Monitoring ( ssh to the box and ps auxf )
+<p class="fragment">Extremely unstable
+</section>
+
+<section>
+<h3>Enlightenment</h3>
+<p>What if we were to deploy things where we could find them later?
+</section>
+<!-- Example of nested vertical slides -->
+<section>
+<section>
+<h2>Python Deployer ( Using Fabric )</h2>
 <pre><code>
 attention/
 helloworld/
@@ -108,26 +139,26 @@ tally_main/
 timeline/
 tribal/
 twitterfirehose/
-    fabfile.py
-    supervisor.template
+fabfile.py
+supervisor.template
 </code></pre>
-                </section>
-                <section>
-                <h4>fabfile.py</h4>
+</section>
+<section>
+<h4>fabfile.py</h4>
 <pre><code class="python">
 env.repos= ['spy']
 
 env.name = 'twitterfirehose'
 
 env.roledefs = {
-    'local' : ['localhost'],
-    'dev'  : ['ff-firehose-pubsub'],
-    'prod' : ['ff-firehose-pubsub'],
+'local' : ['localhost'],
+'dev'  : ['ff-firehose-pubsub'],
+'prod' : ['ff-firehose-pubsub'],
 }
 </code></pre>
-                </section>
-                <section>
-                <h4>supervisor.template</h4>
+</section>
+<section>
+<h4>supervisor.template</h4>
 <pre><code>
 %(defaults)s
 
@@ -146,332 +177,339 @@ autorestart=true
 command=%(python)s %(path)s/spy/utils/s3_stream_uploader.py twitterfirehose -e %(env)s
 autorestart=true
 </pre></code>
-                </section>
+</section>
 <section>
 <pre>
 <code class="python">@task
 def supervisorctl(cmd):
-    run('supervisorctl -c %s %s' % (env.supervisor_conf_path, cmd))
+run('supervisorctl -c %s %s' % (env.supervisor_conf_path, cmd))
 
 
 @task
 def supervisor_start():
-    run("supervisord -c %s" % env.supervisor_conf_path)
+run("supervisord -c %s" % env.supervisor_conf_path)
 
 
 @task
 def deploy(update_main=True, update_all=False):
-    checkout()
-                    </code></pre>
+checkout()
+    </code></pre>
 </section>
 </section>
-                    <section>
-                    <h2>Process</h2>
-                    <p class="fragment">SSH to deploy server
-                    <p class="fragment">Error/Sanity check some things ( which supervisord... )
-                    <p class="fragment">Create a subdir in /opt/socialflow/:env/:application
-                    <p class="fragment">Git clone each repo
-                    <p class="fragment">cd into each dir
-                    <p class="fragment">install python,perl deps into a contained dir
-                    <p class="fragment">Render the supervisor template file
-                    <p class="fragment">Assert the supervisor daemon is running
-                    <p class="fragment">Call 'update' on the supervisord
-                    </section>
-                    <section>
-                    <h4>Examples</h4>
+    <section>
+    <h2>Deploy Process</h2>
+    <li class="fragment">SSH to deploy server
+    <li class="fragment">Error/Sanity check some things ( which supervisord... )
+    <li class="fragment">Create a subdir in /opt/socialflow/:env/:application
+    <li class="fragment">Git clone each repo
+    <li class="fragment">cd into each dir
+    <li class="fragment">install python,perl deps into a contained dir
+    <li class="fragment">Render the supervisor template file
+    <li class="fragment">Assert the supervisor daemon is running
+    <li class="fragment">Call 'update' on the supervisord
+    </section>
+    <section>
+    <h4>Examples</h4>
 <pre><code>$ fab prod deploy
 $ fab prod 'supervisorctl:restart all'</code></pre>
-                    </section>
+    </section>
 
+    <section>
+    <h3>Advantages</h3>
+    <li class="fragment">Daemons will be restarted if they exit
+    <li class="fragment">Neat cli
+    <li class="fragment">Automated
+    <li class="fragment">Somewhat documented ( There were still special cases )
+    </section>
 
-                    <section>
-                    <h2>Summary</h2>
-                    <p class="fragment">Documentation: Some
-                    <p class="fragment">Rollbacks: Hard
-                    <p class="fragment">Monitoring: check_mk + nagios -&gt; very manual
-                    <p class="fragment">Stability: Meh
-                    </section>
-                <section>
-                    <h2>Drawbacks</h2>
-                    <div class="fragment"><p>Fabric is an API over SSH ( pretty much. )
-                    You can't use all the OS manipulating functions Python has to offer.
-                    <p>You basically end up writing python wrapped Shell scripts</p>
-                    <div class="fragment">
-                        <p>No standards, logs were going to /tmp or /opt or whereever they were hardcoded to.
-                </div>
-				</section>
-                <section>
-                <section>
-                    <h2>Why Replace It?</h2>
-                    <p>Python has plenty of decent OS manipulating functions</p>
-                    <p>( tmp files, path checking, process spawning, etc )</p>
-                </section>
-                <section>
-                <h2>Stupidity</h2>
-                <p>Discarding working software and starting from scratch is usually a bad idea.</p>
-                <p class="fragment">Massive underestimate of work involved
-                <p class="fragment">We probably should've just improved it.
-                <p class="fragment">:)
-                </section>
-                </section>
-				<section>
-					<h2>Slides</h2>
-					<p>
-						Not a coder? No problem. There's a fully-featured visual editor for authoring these, try it out at <a href="http://slid.es" target="_blank">http://slid.es</a>.
-					</p>
-				</section>
+    <section>
+    <h2>Disadvantages</h2>
+    <p class="fragment">Documentation: Some
+    <p class="fragment">Rollbacks: Hard
+    <p class="fragment">Monitoring: check_mk + nagios -&gt; very manual
+    <p class="fragment">Stability: Meh
+    </section>
+<section>
+    <h2>Drawbacks</h2>
+    <div class="fragment"><p>Fabric is an API over SSH ( pretty much. )
+    You can't use all the OS manipulating functions Python has to offer.
+    <p>You basically end up writing python wrapped Shell scripts</p>
+    <div class="fragment">
+        <p>No standards, logs were going to /tmp or /opt or whereever they were hardcoded to.
+</div>
+</section>
+<section>
+<section>
+    <h2>Why Replace It?</h2>
+    <p>Python has plenty of decent OS manipulating functions</p>
+    <p>( tmp files, path checking, process spawning, etc )</p>
+</section>
+<section>
+<h2>Stupidity</h2>
+<p>Discarding working software and starting from scratch is usually a bad idea.</p>
+<p class="fragment">Massive underestimate of work involved
+<p class="fragment">We probably should've just improved it.
+<p class="fragment">:)
+</section>
+</section>
+<section>
+    <h2>Slides</h2>
+    <p>
+        Not a coder? No problem. There's a fully-featured visual editor for authoring these, try it out at <a href="http://slid.es" target="_blank">http://slid.es</a>.
+    </p>
+</section>
 
-				<section>
-					<h2>Point of View</h2>
-					<p>
-						Press <strong>ESC</strong> to enter the slide overview.
-					</p>
-					<p>
-						Hold down alt and click on any element to zoom in on it using <a href="http://lab.hakim.se/zoom-js">zoom.js</a>. Alt + click anywhere to zoom back out.
-					</p>
-				</section>
+<section>
+    <h2>Point of View</h2>
+    <p>
+        Press <strong>ESC</strong> to enter the slide overview.
+    </p>
+    <p>
+        Hold down alt and click on any element to zoom in on it using <a href="http://lab.hakim.se/zoom-js">zoom.js</a>. Alt + click anywhere to zoom back out.
+    </p>
+</section>
 
-				<section>
-					<h2>Works in Mobile Safari</h2>
-					<p>
-						Try it out! You can swipe through the slides and pinch your way to the overview.
-					</p>
-				</section>
+<section>
+    <h2>Works in Mobile Safari</h2>
+    <p>
+        Try it out! You can swipe through the slides and pinch your way to the overview.
+    </p>
+</section>
 
-				<section>
-					<h2>Marvelous Unordered List</h2>
-					<ul>
-						<li>No order here</li>
-						<li>Or here</li>
-						<li>Or here</li>
-						<li>Or here</li>
-					</ul>
-				</section>
+<section>
+    <h2>Marvelous Unordered List</h2>
+    <ul>
+        <li>No order here</li>
+        <li>Or here</li>
+        <li>Or here</li>
+        <li>Or here</li>
+    </ul>
+</section>
 
-				<section>
-					<h2>Fantastic Ordered List</h2>
-					<ol>
-						<li>One is smaller than...</li>
-						<li>Two is smaller than...</li>
-						<li>Three!</li>
-					</ol>
-				</section>
+<section>
+    <h2>Fantastic Ordered List</h2>
+    <ol>
+        <li>One is smaller than...</li>
+        <li>Two is smaller than...</li>
+        <li>Three!</li>
+    </ol>
+</section>
 
-				<section data-markdown>
-					<script type="text/template">
-						## Markdown support
+<section data-markdown>
+    <script type="text/template">
+        ## Markdown support
 
-						For those of you who like that sort of thing. Instructions and a bit more info available [here](https://github.com/hakimel/reveal.js#markdown).
+        For those of you who like that sort of thing. Instructions and a bit more info available [here](https://github.com/hakimel/reveal.js#markdown).
 
-						```
-						<section data-markdown>
-						  ## Markdown support
+        ```
+        <section data-markdown>
+          ## Markdown support
 
-						  For those of you who like that sort of thing.
-						  Instructions and a bit more info available [here](https://github.com/hakimel/reveal.js#markdown).
-						</section>
-						```
-					</script>
-				</section>
+          For those of you who like that sort of thing.
+          Instructions and a bit more info available [here](https://github.com/hakimel/reveal.js#markdown).
+        </section>
+        ```
+    </script>
+</section>
 
-				<section id="transitions">
-					<h2>Transition Styles</h2>
-					<p>
-						You can select from different transitions, like: <br>
-						<a href="?transition=cube#/transitions">Cube</a> -
-						<a href="?transition=page#/transitions">Page</a> -
-						<a href="?transition=concave#/transitions">Concave</a> -
-						<a href="?transition=zoom#/transitions">Zoom</a> -
-						<a href="?transition=linear#/transitions">Linear</a> -
-						<a href="?transition=fade#/transitions">Fade</a> -
-						<a href="?transition=none#/transitions">None</a> -
-						<a href="?#/transitions">Default</a>
-					</p>
-				</section>
+<section id="transitions">
+    <h2>Transition Styles</h2>
+    <p>
+        You can select from different transitions, like: <br>
+        <a href="?transition=cube#/transitions">Cube</a> -
+        <a href="?transition=page#/transitions">Page</a> -
+        <a href="?transition=concave#/transitions">Concave</a> -
+        <a href="?transition=zoom#/transitions">Zoom</a> -
+        <a href="?transition=linear#/transitions">Linear</a> -
+        <a href="?transition=fade#/transitions">Fade</a> -
+        <a href="?transition=none#/transitions">None</a> -
+        <a href="?#/transitions">Default</a>
+    </p>
+</section>
 
-				<section id="themes">
-					<h2>Themes</h2>
-					<p>
-						Reveal.js comes with a few themes built in: <br>
-						<a href="?#/themes">Default</a> -
-						<a href="?theme=sky#/themes">Sky</a> -
-						<a href="?theme=beige#/themes">Beige</a> -
-						<a href="?theme=simple#/themes">Simple</a> -
-						<a href="?theme=serif#/themes">Serif</a> -
-						<a href="?theme=night#/themes">Night</a> <br>
-						<a href="?theme=moon#/themes">Moon</a> -
-						<a href="?theme=solarized#/themes">Solarized</a>
-					</p>
-					<p>
-						<small>
-							* Theme demos are loaded after the presentation which leads to flicker. In production you should load your theme in the <code>&lt;head&gt;</code> using a <code>&lt;link&gt;</code>.
-						</small>
-					</p>
-				</section>
+<section id="themes">
+    <h2>Themes</h2>
+    <p>
+        Reveal.js comes with a few themes built in: <br>
+        <a href="?#/themes">Default</a> -
+        <a href="?theme=sky#/themes">Sky</a> -
+        <a href="?theme=beige#/themes">Beige</a> -
+        <a href="?theme=simple#/themes">Simple</a> -
+        <a href="?theme=serif#/themes">Serif</a> -
+        <a href="?theme=night#/themes">Night</a> <br>
+        <a href="?theme=moon#/themes">Moon</a> -
+        <a href="?theme=solarized#/themes">Solarized</a>
+    </p>
+    <p>
+        <small>
+            * Theme demos are loaded after the presentation which leads to flicker. In production you should load your theme in the <code>&lt;head&gt;</code> using a <code>&lt;link&gt;</code>.
+        </small>
+    </p>
+</section>
 
-				<section>
-					<h2>Global State</h2>
-					<p>
-						Set <code>data-state="something"</code> on a slide and <code>"something"</code>
-						will be added as a class to the document element when the slide is open. This lets you
-						apply broader style changes, like switching the background.
-					</p>
-				</section>
+<section>
+    <h2>Global State</h2>
+    <p>
+        Set <code>data-state="something"</code> on a slide and <code>"something"</code>
+        will be added as a class to the document element when the slide is open. This lets you
+        apply broader style changes, like switching the background.
+    </p>
+</section>
 
-				<section data-state="customevent">
-					<h2>Custom Events</h2>
-					<p>
-						Additionally custom events can be triggered on a per slide basis by binding to the <code>data-state</code> name.
-					</p>
-					<pre><code data-trim contenteditable style="font-size: 18px; margin-top: 20px;">
+<section data-state="customevent">
+    <h2>Custom Events</h2>
+    <p>
+        Additionally custom events can be triggered on a per slide basis by binding to the <code>data-state</code> name.
+    </p>
+    <pre><code data-trim contenteditable style="font-size: 18px; margin-top: 20px;">
 Reveal.addEventListener( 'customevent', function() {
-	console.log( '"customevent" has fired' );
+console.log( '"customevent" has fired' );
 } );
-					</code></pre>
-				</section>
+    </code></pre>
+</section>
 
-				<section>
-					<section data-background="#007777">
-						<h2>Slide Backgrounds</h2>
-						<p>
-							Set <code>data-background="#007777"</code> on a slide to change the full page background to the given color. All CSS color formats are supported.
-						</p>
-						<a href="#" class="image navigate-down">
-							<img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
-						</a>
-					</section>
-					<section data-background="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png">
-						<h2>Image Backgrounds</h2>
-						<pre><code>&lt;section data-background="image.png"&gt;</code></pre>
-					</section>
-					<section data-background="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" data-background-repeat="repeat" data-background-size="100px">
-						<h2>Repeated Image Backgrounds</h2>
-						<pre><code style="word-wrap: break-word;">&lt;section data-background="image.png" data-background-repeat="repeat" data-background-size="100px"&gt;</code></pre>
-					</section>
-				</section>
+<section>
+    <section data-background="#007777">
+        <h2>Slide Backgrounds</h2>
+        <p>
+            Set <code>data-background="#007777"</code> on a slide to change the full page background to the given color. All CSS color formats are supported.
+        </p>
+        <a href="#" class="image navigate-down">
+            <img width="178" height="238" src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
+        </a>
+    </section>
+    <section data-background="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png">
+        <h2>Image Backgrounds</h2>
+        <pre><code>&lt;section data-background="image.png"&gt;</code></pre>
+    </section>
+    <section data-background="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" data-background-repeat="repeat" data-background-size="100px">
+        <h2>Repeated Image Backgrounds</h2>
+        <pre><code style="word-wrap: break-word;">&lt;section data-background="image.png" data-background-repeat="repeat" data-background-size="100px"&gt;</code></pre>
+    </section>
+</section>
 
-				<section data-transition="linear" data-background="#4d7e65" data-background-transition="slide">
-					<h2>Background Transitions</h2>
-					<p>
-						Pass reveal.js the <code>backgroundTransition: 'slide'</code> config argument to make backgrounds slide rather than fade.
-					</p>
-				</section>
+<section data-transition="linear" data-background="#4d7e65" data-background-transition="slide">
+    <h2>Background Transitions</h2>
+    <p>
+        Pass reveal.js the <code>backgroundTransition: 'slide'</code> config argument to make backgrounds slide rather than fade.
+    </p>
+</section>
 
-				<section data-transition="linear" data-background="#8c4738" data-background-transition="slide">
-					<h2>Background Transition Override</h2>
-					<p>
-						You can override background transitions per slide by using <code>data-background-transition="slide"</code>.
-					</p>
-				</section>
+<section data-transition="linear" data-background="#8c4738" data-background-transition="slide">
+    <h2>Background Transition Override</h2>
+    <p>
+        You can override background transitions per slide by using <code>data-background-transition="slide"</code>.
+    </p>
+</section>
 
-				<section>
-					<h2>Clever Quotes</h2>
-					<p>
-						These guys come in two forms, inline: <q cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
-						&ldquo;The nice thing about standards is that there are so many to choose from&rdquo;</q> and block:
-					</p>
-					<blockquote cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
-						&ldquo;For years there has been a theory that millions of monkeys typing at random on millions of typewriters would
-						reproduce the entire works of Shakespeare. The Internet has proven this theory to be untrue.&rdquo;
-					</blockquote>
-				</section>
+<section>
+    <h2>Clever Quotes</h2>
+    <p>
+        These guys come in two forms, inline: <q cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+        &ldquo;The nice thing about standards is that there are so many to choose from&rdquo;</q> and block:
+    </p>
+    <blockquote cite="http://searchservervirtualization.techtarget.com/definition/Our-Favorite-Technology-Quotations">
+        &ldquo;For years there has been a theory that millions of monkeys typing at random on millions of typewriters would
+        reproduce the entire works of Shakespeare. The Internet has proven this theory to be untrue.&rdquo;
+    </blockquote>
+</section>
 
-				<section>
-					<h2>Pretty Code</h2>
-					<pre><code data-trim contenteditable>
+<section>
+    <h2>Pretty Code</h2>
+    <pre><code data-trim contenteditable>
 function linkify( selector ) {
-  if( supports3DTransforms ) {
+if( supports3DTransforms ) {
 
-    var nodes = document.querySelectorAll( selector );
+var nodes = document.querySelectorAll( selector );
 
-    for( var i = 0, len = nodes.length; i &lt; len; i++ ) {
-      var node = nodes[i];
+for( var i = 0, len = nodes.length; i &lt; len; i++ ) {
+var node = nodes[i];
 
-      if( !node.className ) {
-        node.className += ' roll';
-      }
-    }
-  }
+if( !node.className ) {
+node.className += ' roll';
 }
-					</code></pre>
-					<p>Courtesy of <a href="http://softwaremaniacs.org/soft/highlight/en/description/">highlight.js</a>.</p>
-				</section>
+}
+}
+}
+    </code></pre>
+    <p>Courtesy of <a href="http://softwaremaniacs.org/soft/highlight/en/description/">highlight.js</a>.</p>
+</section>
 
-				<section>
-					<h2>Intergalactic Interconnections</h2>
-					<p>
-						You can link between slides internally,
-						<a href="#/2/3">like this</a>.
-					</p>
-				</section>
+<section>
+    <h2>Intergalactic Interconnections</h2>
+    <p>
+        You can link between slides internally,
+        <a href="#/2/3">like this</a>.
+    </p>
+</section>
 
-				<section>
-					<section id="fragments">
-						<h2>Fragmented Views</h2>
-						<p>Hit the next arrow...</p>
-						<p class="fragment">... to step through ...</p>
-						<ol>
-							<li class="fragment"><code>any type</code></li>
-							<li class="fragment"><em>of view</em></li>
-							<li class="fragment"><strong>fragments</strong></li>
-						</ol>
+<section>
+    <section id="fragments">
+        <h2>Fragmented Views</h2>
+        <p>Hit the next arrow...</p>
+        <p class="fragment">... to step through ...</p>
+        <ol>
+            <li class="fragment"><code>any type</code></li>
+            <li class="fragment"><em>of view</em></li>
+            <li class="fragment"><strong>fragments</strong></li>
+        </ol>
 
-						<aside class="notes">
-							This slide has fragments which are also stepped through in the notes window.
-						</aside>
-					</section>
-					<section>
-						<h2>Fragment Styles</h2>
-						<p>There's a few styles of fragments, like:</p>
-						<p class="fragment grow">grow</p>
-						<p class="fragment shrink">shrink</p>
-						<p class="fragment roll-in">roll-in</p>
-						<p class="fragment fade-out">fade-out</p>
-						<p class="fragment highlight-red">highlight-red</p>
-						<p class="fragment highlight-green">highlight-green</p>
-						<p class="fragment highlight-blue">highlight-blue</p>
-						<p class="fragment current-visible">current-visible</p>
-						<p class="fragment highlight-current-blue">highlight-current-blue</p>
-					</section>
-				</section>
+        <aside class="notes">
+            This slide has fragments which are also stepped through in the notes window.
+        </aside>
+    </section>
+    <section>
+        <h2>Fragment Styles</h2>
+        <p>There's a few styles of fragments, like:</p>
+        <p class="fragment grow">grow</p>
+        <p class="fragment shrink">shrink</p>
+        <p class="fragment roll-in">roll-in</p>
+        <p class="fragment fade-out">fade-out</p>
+        <p class="fragment highlight-red">highlight-red</p>
+        <p class="fragment highlight-green">highlight-green</p>
+        <p class="fragment highlight-blue">highlight-blue</p>
+        <p class="fragment current-visible">current-visible</p>
+        <p class="fragment highlight-current-blue">highlight-current-blue</p>
+    </section>
+</section>
 
-				<section>
-					<h2>Spectacular image!</h2>
-					<a class="image" href="http://lab.hakim.se/meny/" target="_blank">
-						<img width="320" height="299" src="http://s3.amazonaws.com/hakim-static/portfolio/images/meny.png" alt="Meny">
-					</a>
-				</section>
+<section>
+    <h2>Spectacular image!</h2>
+    <a class="image" href="http://lab.hakim.se/meny/" target="_blank">
+        <img width="320" height="299" src="http://s3.amazonaws.com/hakim-static/portfolio/images/meny.png" alt="Meny">
+    </a>
+</section>
 
-				<section>
-					<h2>Export to PDF</h2>
-					<p>Presentations can be <a href="https://github.com/hakimel/reveal.js#pdf-export">exported to PDF</a>, below is an example that's been uploaded to SlideShare.</p>
-					<iframe id="slideshare" src="http://www.slideshare.net/slideshow/embed_code/13872948" width="455" height="356" style="margin:0;overflow:hidden;border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen> </iframe>
-					<script>
-						document.getElementById('slideshare').attributeName = 'allowfullscreen';
-					</script>
-				</section>
+<section>
+    <h2>Export to PDF</h2>
+    <p>Presentations can be <a href="https://github.com/hakimel/reveal.js#pdf-export">exported to PDF</a>, below is an example that's been uploaded to SlideShare.</p>
+    <iframe id="slideshare" src="http://www.slideshare.net/slideshow/embed_code/13872948" width="455" height="356" style="margin:0;overflow:hidden;border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen> </iframe>
+    <script>
+        document.getElementById('slideshare').attributeName = 'allowfullscreen';
+    </script>
+</section>
 
-				<section>
-					<h2>Take a Moment</h2>
-					<p>
-						Press b or period on your keyboard to enter the 'paused' mode. This mode is helpful when you want to take distracting slides off the screen
-						during a presentation.
-					</p>
-				</section>
+<section>
+    <h2>Take a Moment</h2>
+    <p>
+        Press b or period on your keyboard to enter the 'paused' mode. This mode is helpful when you want to take distracting slides off the screen
+        during a presentation.
+    </p>
+</section>
 
-				<section>
-					<h2>Stellar Links</h2>
-					<ul>
-						<li><a href="http://slid.es">Try the online editor</a></li>
-						<li><a href="https://github.com/hakimel/reveal.js">Source code on GitHub</a></li>
-						<li><a href="http://twitter.com/hakimel">Follow me on Twitter</a></li>
-					</ul>
-				</section>
+<section>
+    <h2>Stellar Links</h2>
+    <ul>
+        <li><a href="http://slid.es">Try the online editor</a></li>
+        <li><a href="https://github.com/hakimel/reveal.js">Source code on GitHub</a></li>
+        <li><a href="http://twitter.com/hakimel">Follow me on Twitter</a></li>
+    </ul>
+</section>
 
-				<section>
-					<h1>THE END</h1>
-					<h3>BY Hakim El Hattab / hakim.se</h3>
-				</section>
+<section>
+    <h1>THE END</h1>
+    <h3>BY Hakim El Hattab / hakim.se</h3>
+</section>
 
 			</div>
 
