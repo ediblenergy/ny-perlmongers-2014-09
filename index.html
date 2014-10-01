@@ -298,27 +298,28 @@ $ fab prod 'supervisorctl:restart all'</code></pre>
     <section>
             <h3>Deploy Process</h3>
             <ul>
-            <li class="fragment">SSH to deploy server, build server
-            <li class="fragment">If version is deployed already, exit
-            <li class="fragment">Check if version is built and tarred already in s3
-            <li class="fragment">Create subdirs as needed in :env/:application dirs
-            <li class="fragment">If no tar, Build-
+            <li>SSH to deploy server, build server
+            <li>If version is deployed already, exit
+            <li>Check if version is built and tarred already in s3
+            <li>Create subdirs as needed in :env/:application dirs
+            <li>If no tar, Build-
             <ul>
-                <li class="fragment">on build box, clone all repos
-                <li class="fragment">rsync previous versions perl5 | virtualenv
-                <li class="fragment">install perl deps from config
-                <li class="fragment">If building via git, cd into git repos and cpanm --installdeps --mirror our_local_cpan
-                <li class="fragment">tar it up, upload it to Amazon S3
+                <li>on build box, clone all repos
+                <li>rsync previous versions perl5 | virtualenv
+                <li>install perl deps from config
+                <li>If building via git, cd into git repos and cpanm --installdeps --mirror our_local_cpan
+                <li>tar it up, upload it to Amazon S3
             </ul>
-            <li class="fragment">on deploy server:
+            <li>on deploy server:
             <ul>
-                <li class="fragment">Untar into place
-                <li class="fragment">Symlink to current
-                <li class="fragment">Call 'update' on the supervisord
+                <li>Untar into place
+                <li>Symlink to current
+                <li>Call 'update' on the supervisord
             </ul>
             </ul>
+        </section>
     </section>
-    <section>
+<section>
         <h3>Self Documenting</h3>
 <pre><code>
 sf-deploy-application/application/resolver/
@@ -345,7 +346,6 @@ sf-deploy-application/application/resolver/
 ├── supervisor.tt
 └── version.yml
         </pre></code>
-    </section>
 </section>
 <section>
 <pre><code>$ sf-deploy.pl -c application/resolver/prod --deploy
@@ -355,6 +355,56 @@ sf-deploy-application/application/resolver/
                                           --rsync_share
 </code></pre>
 </section>
+    <section>
+        <section>
+            <h2>Features</h2>
+        </section>
+        <section>
+            <h3>Rollbacks</h3>
+            <p>Symlink the version you want to rollback to as 'current'.
+            <p>Restart ( or kill, cause supervisord will restart it if autorestart=true ) the process.
+        </section>
+        <section>
+        <h3>Templated config</h3>
+        <pre><code>[tally_worker_tribal]
+env="s[% env %]"
+messaginglib_conf_dir="[% application_config_path %]"
+pg_creds="[% application_config_path %]/creds.yml"
+</code></pre>
+        </section>
+        <section>
+        <h3>Network requirement testing</h3>
+        <p>Application config:
+        <pre><code>
+network_connection:
+    - redis_twitter_audience
+    - redis_sf_web
+    - redis_sf_web_cache
+    - sf_nlp
+    - sf_web_db
+</code></pre>
+        <p>Environment config:
+        <pre><code>
+network_connection:
+    redis_sf_web:
+        - 'redis_sf_web.[% env %]:[% port.sf_web_redis.sf_web_redis %]'
+    redis_sf_web_cache:
+        - 'redis_sf_web_cache.[% env %]:[% port.redis_sf_web_cache.redis_sf_web_cache %]'
+    sf_web_db:
+        - 'pg-site.[% env %]:postgresql'
+</code></pre>
+        </section>
+        <section>
+        <ul>
+            <li>pgp encrypted creds
+            <li>Auto-generated nagios checks, performance graphs
+            <li>Run arbitrary script during build phase
+            <li>apt_requires
+            <li>c_header
+            <li>Pre shipped sf-deploy for speed boost
+        </ul>
+        </section>
+    </section>
 <section>
 <p>( Decided not to embed all the code in these slides )
 <div class="fragment">
@@ -394,10 +444,16 @@ MyClass->new::on( $conn )->run</code></pre>
     <p class="fragment"><small>caveat, no xs</small></p>
 </section>
 <section>
-    <h3>In progress</h3>
-    <p>The system is introspectable via the configs and using SocialFlow::Deploy.
-    <p>We auto-generate nagios checks for all running daemons with alerts on unexpected exits.
-    <p>Perfomance charts of memory usage, uptime...
+    <h3>Other tech</h3>
+    <ul>
+        <li>Text::Xslate ( Templating )
+        <li>Moo
+        <li>MooX::Options ( Getopt )
+        <li>YAML
+    </ul>
+</section>
+<section>
+    <h2>Thanks!</h2>
 </section>
 </div>
 
